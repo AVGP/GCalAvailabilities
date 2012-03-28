@@ -21,6 +21,18 @@ class GoogleCalendar {
         $this->dataProvider = $dataProvider;
     }
 
+    /**
+     * Initializes a default Zend_Gdata_Calendar instance using an AuthSub session token.
+     * This method allows to use a session token from the current user session to be used
+     * with the service instance, when no special provider needs to be injected.
+     */
+    public function initDefaultProviderFromToken($token) {
+        if($token == null) throw new \Exception('Missing authentication token');
+
+        $client = \Zend_Gdata_AuthSub::getHttpClient($token);
+        $this->dataProvider = new Zend_Gdata_Calendar($client);
+    }
+
     
 }
 
