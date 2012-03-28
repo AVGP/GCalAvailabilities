@@ -10,6 +10,17 @@ use \Zend_Gdata_Calendar;
  * easily test our code.
  */
 class GoogleCalendar {
+    protected $dataProvider;
+
+    /**
+     * Creates new instance of the service.
+     * @param Object (Optional) Allows to set an object to carry out requests
+     *        to Google Calendar API. This allows dependency injection.
+     */
+    public function __construct($dataProvider = null) {
+        $this->dataProvider = $dataProvider;
+    }
+
     
 }
 
