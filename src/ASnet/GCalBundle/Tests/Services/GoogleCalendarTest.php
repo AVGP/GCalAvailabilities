@@ -8,6 +8,47 @@ use ASnet\GCalBundle\Services\GoogleCalendar;
  * Testing the GoogleCalendar service
  */
 class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
+
+    /**
+     * List of calendars our mocked Zend_Gdata_Calendar will return when asked
+     * for a list of calendars
+     * @var Array Structure
+     *      array(
+     *          {
+     *              title: 'xyz',
+     *              'link' => array(
+     *                  0 => { href: http://calendar.google.com/xyz}
+     *              )
+     *          },
+     *          ...
+     *      )
+     */
+    protected $calendarsTestSet;
+
+    /**
+     * Initializing test data for the mock.
+     * This is placed in the constructor and not in setUp, because we need this only once and not
+     * before each testcase. 
+     */
+    public function __construct() {
+        $this->calendarsTestSet = array(
+                (object) array(
+                        'title' => 'Cal #1',
+                        'link' => array( (object) array('href' => 'http://calendar.google.com/cal1') )
+                    ),
+                (object) array(
+                        'title' => 'Cal #2',
+                        'link' => array( (object) array('href' => 'http://calendar.google.com/cal2') )
+                    ),
+                (object) array(
+                        'title' => 'Cal #3',
+                        'link' => array( (object) array('href' => 'http://calendar.google.com/cal3') )
+                    ),
+            );
+
+        parent::__construct();
+    }
+
    /**
     * Test the constructor:
     * Case 1: Call without a data provider
@@ -54,6 +95,31 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
 
         $testSubject->initDefaultProviderFromToken('sometoken');
         $this->assertTrue($testSubject->isInitialized());
+    }
+
+    public function testGetCalendars() {
+        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+
+        $this->assertEquals($this->calendarsTestSet, $testSubject->getCalendars(), 'Calendar list was not properly returned by getCalendars()');
+    }
+
+    /**
+     * Returns a mock object for the Zend_Gdata service implementation
+     */
+    protected function getDataProviderMock() {
+
+        $mock = $this->getMock('Zend_Gdata_Calendar',
+                array('getCalendarListFeed', 'getCalendarEventFeed'),
+                array(),
+                '',
+                false
+            );
+
+        $mock->expects($this->any())
+                ->method('getCalendarListFeed')
+                ->will($this->returnValue($this->calendarsTestSet));
+
+        return $mock;
     }
 }
 

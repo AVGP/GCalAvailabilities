@@ -42,6 +42,15 @@ class GoogleCalendar {
     public function isInitialized() {
         return is_object($this->dataProvider);
     }
+
+    /**
+     * Returns a list of calendars for the current user.
+     * This is a boundary method to wrap the external dependency
+     * @return Array Array of Calendar-Objects (@see https://developers.google.com/google-apps/calendar/v3/reference/calendarList?hl=de#resource)
+     */
+    public function getCalendars() {
+        return $this->dataProvider->getCalendarListFeed();
+    }
     
 }
 
