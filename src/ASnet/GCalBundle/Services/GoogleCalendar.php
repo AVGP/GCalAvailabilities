@@ -33,6 +33,15 @@ class GoogleCalendar {
         $this->dataProvider = new Zend_Gdata_Calendar($client);
     }
 
+    /**
+     * For calls to the methods actually utilizing the data provider, this method
+     * will be called to make sure the data provider is set up (i.e. an object for now)
+     * In actual production code it would be better to ensure that it exposes the necessary
+     * methods.
+     */
+    public function isInitialized() {
+        return is_object($this->dataProvider);
+    }
     
 }
 

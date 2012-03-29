@@ -39,6 +39,22 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $testSubject->initDefaultProviderFromToken('sometoken');
         $this->assertAttributeInstanceOf('Zend_Gdata_Calendar', 'dataProvider', $testSubject);
     }
+
+    /**
+     * Test if we can reliably determine if we're ready to get some data from the data provider
+     */
+    public function testIsInitialized() {
+
+        $testSubject = new GoogleCalendar($this);   // Semantically it does not make sense to pass $this,
+                                                     // see comment in testConstructor.
+        $this->assertTrue($testSubject->isInitialized());
+        
+        $testSubject = new GoogleCalendar();
+        $this->assertFalse($testSubject->isInitialized());
+
+        $testSubject->initDefaultProviderFromToken('sometoken');
+        $this->assertTrue($testSubject->isInitialized());
+    }
 }
 
 ?>
