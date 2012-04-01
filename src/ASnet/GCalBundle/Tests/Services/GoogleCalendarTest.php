@@ -15,8 +15,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
      * @var Array Structure
      *      array(
      *          {
-     *              title: 'xyz',
-     *              'link' => array(
+     *              'title': 'xyz',
+     *              'link': array(
      *                  0 => { href: http://calendar.google.com/xyz}
      *              )
      *          },
@@ -24,6 +24,21 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
      *      )
      */
     protected $calendarsTestSet;
+
+    /**
+     * List of events for mocked Zend_Gdata_Calendar will return when asked for a list of events.
+     * @var Array Structure
+     *      array(
+     *          {
+     *              'title': 'xyz',
+     *              'when': array(
+     *                  0 => DateTime,
+     *                  ..
+     *          },
+     *          ...
+     *      )
+     */
+    public static $eventsTestSet;
 
     /**
      * Initializing test data for the mock.
@@ -45,6 +60,50 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'link' => array( (object) array('href' => 'http://calendar.google.com/cal3') )
                     ),
             );
+
+        GoogleCalendarTest::$eventsTestSet = array(
+            array(
+                    (object) array(
+                        'title' => 'Test Event #1 in Calendar #1',
+                        'when' => array(
+                            0 => (object) array(
+                                'startTime' => new \DateTime('tomorrow 8am'),
+                                'endTime' => new \DateTime('tomorrow 9am')
+                            )
+                        )
+                    ),
+                    (object) array(
+                        'title' => 'Test Event #2 in Calendar #1',
+                        'when' => array(
+                            0 => (object) array(
+                                'startTime' => new \DateTime('tomorrow 10am'),
+                                'endTime' => new \DateTime('tomorrow 11am')
+                            )
+                        )
+                    ),
+                    (object) array(
+                        'title' => 'Test Event #3 (recurring) in Calendar #1',
+                        'when' => array(
+                            0 => (object) array(
+                                'startTime' => new \DateTime('today 1pm'),
+                                'endTime' => new \DateTime('today 2pm')
+                            ),
+                            1 => (object) array(
+                                'startTime' => new \DateTime('tomorrow 1pm'),
+                                'endTime' => new \DateTime('tomorrow 2pm')
+                            ),
+                            2 => (object) array(
+                                'startTime' => new \DateTime('+2 days 1pm'),
+                                'endTime' => new \DateTime('+2 days 2pm')
+                            ),
+                        )
+                    ),
+                ),
+            array(
+                    (object) array('title' => 'Test Event #1 in Calendar #2'),
+                    (object) array('title' => 'Test Event #2 in Calendar #2')
+                )
+        );
 
         parent::__construct();
     }
@@ -103,6 +162,20 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($this->calendarsTestSet, $testSubject->getCalendars(), 'Calendar list was not properly returned by getCalendars()');
     }
 
+    public function testGetEventsFromCalendar() {
+
+        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+        try {
+            $testSubject->getEventsFromCalendar('unknownCalendar');
+            $this->fail('Calling GoogleCalendar::getEventsForCalendar() with unknown calendar name given should raise an exception');
+        } catch(\Exception $e) {
+            $this->assertEquals('Unknown calendar', $e->getMessage());
+        }
+
+        $this->assertEquals(GoogleCalendarTest::$eventsTestSet[0], $testSubject->getEventsFromCalendar('Cal #1'));
+#        $this->assertEquals($this->eventsTestSet[1], $testSubject->getEventsFromCalendar('Cal #2'));
+    }
+
     /**
      * Returns a mock object for the Zend_Gdata service implementation
      */
@@ -118,6 +191,17 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $mock->expects($this->any())
                 ->method('getCalendarListFeed')
                 ->will($this->returnValue($this->calendarsTestSet));
+
+        $mock->expects($this->any())
+                ->method('getCalendarEventFeed')
+                ->will($this->returnCallback(function($calendar) {
+                    if($calendar == 'http://calendar.google.com/cal1')
+                        return GoogleCalendarTest::$eventsTestSet[0];
+                    else if($calendar == 'http://calendar.google.com/cal1')
+                        return GoogleCalendarTest::$eventsTestSet[1];
+                    else
+                        return array();
+                }));
 
         return $mock;
     }
