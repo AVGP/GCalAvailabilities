@@ -187,17 +187,19 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         }
 
         //Case 1: New event starts before existing event and ends while existing event isn't finished
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7am'), new DateTime('tomorrow 8:30am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7am'), new \DateTime('tomorrow 8:30am')));
         //Case 2: New event starts when existing event starts and ends befor existing event ends
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8am'), new DateTime('tomorrow 8:30am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8am'), new \DateTime('tomorrow 8:30am')));
         //Case 3: New event starts after existing events started & before it ended and runs longer than existing event
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:30am'), new DateTime('tomorrow 9:30am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:30am'), new \DateTime('tomorrow 9:30am')));
         //Case 4: New event starts after existing events started & ends before existing event ends.
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:10am'), new DateTime('tomorrow 8:50am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:10am'), new \DateTime('tomorrow 8:50am')));
         // Case 5: New event ends exactly when existing event starts
-        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7:30am'), new DateTime('tomorrow 8:00am')));
+        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7:30am'), new \DateTime('tomorrow 8:00am')));
         // Case 6: New event starts exactly when existing event ends
-        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 9:00am'), new DateTime('tomorrow 9:30am')));
+        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 9:00am'), new \DateTime('tomorrow 9:30am')));
+        //Case 7: New event collides with a recurring event
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 1:30pm'), new \DateTime('tomorrow 2:30pm')));
 
     }
 
