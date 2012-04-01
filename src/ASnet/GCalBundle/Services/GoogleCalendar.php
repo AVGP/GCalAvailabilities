@@ -3,6 +3,7 @@
 namespace ASnet\GCalBundle\Services;
 
 use \Zend_Gdata_Calendar;
+use \Zend_Gdata_Calendar_EventQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -69,7 +70,7 @@ class GoogleCalendar {
         return $this->dataProvider->getCalendarEventFeed($feedUrl);
     }
 
-    public function isEventPossible($calendarName, \DateTime $start, \DateTime $end) {
+    public function isEventPossible($calendarName, $start, $end) {
         $listFeed = $this->getCalendars();
 
         $calendarId = null;
@@ -82,13 +83,15 @@ class GoogleCalendar {
 
         if($calendarId == null) throw new NotFoundHttpException('Unknown calendar');
 
-        //The Calendar-ID is not suitable to be used in EventQuery.
+        //The Calendar-ID is not suitable to be used in EventQuery, it has to be extracted from a longer URL
         $urlPart = array('','');
         preg_match('#(?<=/)([^/]+)(/private)?(/full)?$#isU', $calendarId, $urlPart);
 
-        $query = $this->dataProvider->newEventQuery();
-        $query->setStartMin($start->modify('-1 day')->format('Y-m-d'));
-        $query->setStartMax($end->modify('+1 day')->format('Y-m-d')); //Though the docs said "setStartMax is INCLUSIVE" it turns out: It isn't.
+        $query = new Zend_Gdata_Calendar_EventQuery;
+        $tmp = new \DateTime($start->format('c')); //This is necessary, because modify() changes the object DIRECTLY
+        $query->setStartMin($tmp->modify('-1 day')->format('Y-m-d'));
+        $tmp = new \DateTime($end->format('c'));
+        $query->setStartMax($tmp->modify('+1 day')->format('Y-m-d')); //Though the docs said "setStartMax is INCLUSIVE" it turns out: It isn't.
         $query->setOrderBy('starttime');
         $query->setProjection('full');
         $query->setUser($urlPart[1]);
@@ -99,10 +102,15 @@ class GoogleCalendar {
                 $dtStart = new \DateTime($when->startTime);
                 $dtEnd = new \DateTime($when->endTime);
 
-                echo '<p>E: ' . $event->title . 'when? '. $dtStart->format('d.m.Y H:i') . ' - ' . $dtEnd->format('d.m.Y H:i').'</p>';
+                echo 'Testing '. $event->title . ' when: ' . print_r($when,1);
 
-                if(($dtStart < $start && $dtEnd > $start) ||
-                        ($dtStart >= $start && $dtStart < $end)) return false;
+                if(($dtStart < $start && $dtEnd > $start) || ($dtStart >= $start && $dtStart < $end)) {
+                    echo 'Failed: ' . $event->title . ' # ' .
+                            $dtStart->format('c') . ' vs. ' . $dtEnd->format('c') . ' -- ' .
+                            $start->format('c') . ' vs. ' . $end->format('c');
+                    echo (($dtStart < $end) ? 'yes' : 'no');
+                    return false;
+                        }
             }
         }
         return true;

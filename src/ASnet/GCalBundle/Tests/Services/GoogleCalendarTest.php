@@ -48,18 +48,48 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
     public function __construct() {
         $this->calendarsTestSet = array(
                 (object) array(
+                        'id' => 'http://calendar.google.com/feeds/default/cal1@calendar.google.com/private',
                         'title' => 'Cal #1',
                         'link' => array( (object) array('href' => 'http://calendar.google.com/cal1') )
                     ),
                 (object) array(
+                        'id' => 'http://calendar.google.com/feeds/default/cal2@calendar.google.com/full',
                         'title' => 'Cal #2',
                         'link' => array( (object) array('href' => 'http://calendar.google.com/cal2') )
                     ),
                 (object) array(
+                        'id' => 'http://calendar.google.com/feeds/default/cal3@calendar.google.com/private/full',
                         'title' => 'Cal #3',
                         'link' => array( (object) array('href' => 'http://calendar.google.com/cal3') )
                     ),
             );
+
+        $eventTimes = array(
+            array(
+                new \DateTime('2012-02-03 08:00'),
+                new \DateTime('2012-02-03 09:00')
+            ),
+            array(
+                new \DateTime('2012-02-03 10:00'),
+                new \DateTime('2012-02-03 11:00')
+            ),
+            array(
+                new \DateTime('2012-02-02 13:00'),
+                new \DateTime('2012-02-02 14:00')
+            ),
+            array(
+                new \DateTime('2012-02-03 13:00'),
+                new \DateTime('2012-02-03 14:00')
+            ),
+            array(
+                new \DateTime('2012-02-04 13:00'),
+                new \DateTime('2012-02-04 14:00')
+            ),
+            array(
+                new \DateTime('2012-02-03 10:00'),
+                new \DateTime('2012-02-03 11:00')
+            ),
+        ); //Its about time to be abled to rely on PHP 5.4
 
         GoogleCalendarTest::$eventsTestSet = array(
             array(
@@ -67,8 +97,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'title' => 'Test Event #1 in Calendar #1',
                         'when' => array(
                             0 => (object) array(
-                                'startTime' => new \DateTime('tomorrow 8am'),
-                                'endTime' => new \DateTime('tomorrow 9am')
+                                'startTime' => $eventTimes[0][0]->format(DATE_ISO8601),
+                                'endTime' => $eventTimes[0][1]->format(DATE_ISO8601)
                             )
                         )
                     ),
@@ -76,8 +106,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'title' => 'Test Event #2 in Calendar #1',
                         'when' => array(
                             0 => (object) array(
-                                'startTime' => new \DateTime('tomorrow 10am'),
-                                'endTime' => new \DateTime('tomorrow 11am')
+                                'startTime' => $eventTimes[1][0]->format(DATE_ISO8601),
+                                'endTime' => $eventTimes[1][1]->format(DATE_ISO8601)
                             )
                         )
                     ),
@@ -85,23 +115,32 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'title' => 'Test Event #3 (recurring) in Calendar #1',
                         'when' => array(
                             0 => (object) array(
-                                'startTime' => new \DateTime('today 1pm'),
-                                'endTime' => new \DateTime('today 2pm')
+                                'startTime' => $eventTimes[2][0]->format(DATE_ISO8601),
+                                'endTime' => $eventTimes[2][1]->format(DATE_ISO8601)
                             ),
                             1 => (object) array(
-                                'startTime' => new \DateTime('tomorrow 1pm'),
-                                'endTime' => new \DateTime('tomorrow 2pm')
+                                'startTime' => $eventTimes[3][0]->format(DATE_ISO8601),
+                                'endTime' => $eventTimes[3][1]->format(DATE_ISO8601)
                             ),
                             2 => (object) array(
-                                'startTime' => new \DateTime('+2 days 1pm'),
-                                'endTime' => new \DateTime('+2 days 2pm')
+                                'startTime' => $eventTimes[4][0]->format(DATE_ISO8601),
+                                'endTime' => $eventTimes[4][1]->format(DATE_ISO8601)
                             ),
                         )
                     ),
+                    (object) array(
+                        'title' => 'Test Event #4 (parallel with #2) in Calendar #1',
+                        'when' => array(
+                            0 => (object) array(
+                                'startTime' => $eventTimes[5][0]->format(DATE_ISO8601),
+                                'endTime' => $eventTimes[5][1]->format(DATE_ISO8601)
+                            )
+                        )
+                    )
                 ),
             array(
-                    (object) array('title' => 'Test Event #1 in Calendar #2'),
-                    (object) array('title' => 'Test Event #2 in Calendar #2')
+                    (object) array('title' => 'Test Event #1 in Calendar #2', 'when' => array()),
+                    (object) array('title' => 'Test Event #2 in Calendar #2', 'when' => array())
                 )
         );
 
@@ -172,8 +211,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
             $this->assertEquals('Unknown calendar', $e->getMessage());
         }
 
-        $this->assertEquals(GoogleCalendarTest::$eventsTestSet[0], $testSubject->getEventsFromCalendar('Cal #1'));
-        $this->assertEquals($this->eventsTestSet[1], $testSubject->getEventsFromCalendar('Cal #2'));
+        $this->assertEquals(GoogleCalendarTest::$eventsTestSet[0], $testSubject->getEventsFromCalendar('Cal #1'), 'Get Events for Calendar #1');
+        $this->assertEquals(GoogleCalendarTest::$eventsTestSet[1], $testSubject->getEventsFromCalendar('Cal #2'), 'Get Events for Calendar #2');
     }
 
     public function testIsEventPossible() {
@@ -187,19 +226,19 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         }
 
         //Case 1: New event starts before existing event and ends while existing event isn't finished
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7am'), new \DateTime('tomorrow 8:30am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 07:00'), new \DateTime('2012-02-03 08:30')), 'Case #1');
         //Case 2: New event starts when existing event starts and ends befor existing event ends
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8am'), new \DateTime('tomorrow 8:30am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 08:00'), new \DateTime('2012-02-03 08:30')), 'Case #2');
         //Case 3: New event starts after existing events started & before it ended and runs longer than existing event
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:30am'), new \DateTime('tomorrow 9:30am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 08:30'), new \DateTime('2012-02-03 09:30')), 'Case #3');
         //Case 4: New event starts after existing events started & ends before existing event ends.
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:10am'), new \DateTime('tomorrow 8:50am')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 08:10'), new \DateTime('2012-02-03 08:50')), 'Case #4');
         // Case 5: New event ends exactly when existing event starts
-        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7:30am'), new \DateTime('tomorrow 8:00am')));
+        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 07:30'), new \DateTime('2012-02-03 08:00')), 'Case #5');
         // Case 6: New event starts exactly when existing event ends
-        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 9:00am'), new \DateTime('tomorrow 9:30am')));
+        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 09:00'), new \DateTime('2012-02-03 09:30')), 'Case #6');
         //Case 7: New event collides with a recurring event
-        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 1:30pm'), new \DateTime('tomorrow 2:30pm')));
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 13:30'), new \DateTime('2012-02-03 14:30')), 'Case #7');
 
     }
 
@@ -222,12 +261,15 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $mock->expects($this->any())
                 ->method('getCalendarEventFeed')
                 ->will($this->returnCallback(function($calendar) {
-                    if($calendar == 'http://calendar.google.com/cal1')
+                    if($calendar == 'http://calendar.google.com/cal1' || $calendar == 'cal1@calendar.google.com' || is_object($calendar)) {
                         return GoogleCalendarTest::$eventsTestSet[0];
-                    else if($calendar == 'http://calendar.google.com/cal1')
+                    }
+                    else if($calendar == 'http://calendar.google.com/cal2' || $calendar == 'cal2@calendar.google.com') {
                         return GoogleCalendarTest::$eventsTestSet[1];
-                    else
+                    }
+                    else {
                         return array();
+                    }
                 }));
 
         return $mock;
