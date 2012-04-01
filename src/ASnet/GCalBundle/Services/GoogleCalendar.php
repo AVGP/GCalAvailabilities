@@ -69,6 +69,45 @@ class GoogleCalendar {
         return $this->dataProvider->getCalendarEventFeed($feedUrl);
     }
 
+    public function isEventPossible($calendarName, \DateTime $start, \DateTime $end) {
+        $listFeed = $this->getCalendars();
+
+        $calendarId = null;
+        foreach($listFeed as $feed) {
+            if($feed->title == $calendarName) {
+                $calendarId = $feed->id;
+                break;
+            }
+        }
+
+        if($calendarId == null) throw new NotFoundHttpException('Unknown calendar');
+
+        //The Calendar-ID is not suitable to be used in EventQuery.
+        $urlPart = array('','');
+        preg_match('#(?<=/)([^/]+)(/private)?(/full)?$#isU', $calendarId, $urlPart);
+
+        $query = $this->dataProvider->newEventQuery();
+        $query->setStartMin($start->modify('-1 day')->format('Y-m-d'));
+        $query->setStartMax($end->modify('+1 day')->format('Y-m-d')); //Though the docs said "setStartMax is INCLUSIVE" it turns out: It isn't.
+        $query->setOrderBy('starttime');
+        $query->setProjection('full');
+        $query->setUser($urlPart[1]);
+        $query->setVisibility('private');
+
+        foreach($this->dataProvider->getCalendarEventFeed($query) as $event) {
+            foreach($event->when as $when) {
+                $dtStart = new \DateTime($when->startTime);
+                $dtEnd = new \DateTime($when->endTime);
+
+                echo '<p>E: ' . $event->title . 'when? '. $dtStart->format('d.m.Y H:i') . ' - ' . $dtEnd->format('d.m.Y H:i').'</p>';
+
+                if(($dtStart < $start && $dtEnd > $start) ||
+                        ($dtStart >= $start && $dtStart < $end)) return false;
+            }
+        }
+        return true;
+    }
+
 }
 
 ?>
