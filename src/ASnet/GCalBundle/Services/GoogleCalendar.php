@@ -3,6 +3,7 @@
 namespace ASnet\GCalBundle\Services;
 
 use \Zend_Gdata_Calendar;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Provides a wrapper for the external Zend_Gdata_Calendar class
@@ -51,7 +52,23 @@ class GoogleCalendar {
     public function getCalendars() {
         return $this->dataProvider->getCalendarListFeed();
     }
-    
+
+    public function getEventsFromCalendar($calendarName) {
+        $listFeed = $this->getCalendars();
+
+        $feedUrl = null;
+        foreach($listFeed as $feed) {
+            if($feed->title == $calendarName) {
+                $feedUrl = $feed->link[0]->href;
+                break;
+            }
+        }
+
+        if($feedUrl == null) throw new NotFoundHttpException('Unknown calendar');
+
+        return $this->dataProvider->getCalendarEventFeed($feedUrl);
+    }
+
 }
 
 ?>
