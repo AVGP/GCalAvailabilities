@@ -173,8 +173,10 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         }
 
         $this->assertEquals(GoogleCalendarTest::$eventsTestSet[0], $testSubject->getEventsFromCalendar('Cal #1'));
-#        $this->assertEquals($this->eventsTestSet[1], $testSubject->getEventsFromCalendar('Cal #2'));
+        $this->assertEquals($this->eventsTestSet[1], $testSubject->getEventsFromCalendar('Cal #2'));
     }
+
+
 
     /**
      * Returns a mock object for the Zend_Gdata service implementation
