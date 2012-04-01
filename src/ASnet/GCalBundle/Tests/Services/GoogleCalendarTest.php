@@ -167,7 +167,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $testSubject = new GoogleCalendar($this->getDataProviderMock());
         try {
             $testSubject->getEventsFromCalendar('unknownCalendar');
-            $this->fail('Calling GoogleCalendar::getEventsForCalendar() with unknown calendar name given should raise an exception');
+            $this->fail('Calling GoogleCalendar::getEventsFromCalendar() with unknown calendar name given should raise an exception');
         } catch(\Exception $e) {
             $this->assertEquals('Unknown calendar', $e->getMessage());
         }
@@ -176,7 +176,30 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals($this->eventsTestSet[1], $testSubject->getEventsFromCalendar('Cal #2'));
     }
 
+    public function testIsEventPossible() {
+        $testSubject = new GoogleCalendar($this->getDataProviderMock());
 
+        try {
+            $testSubject->isEventPossible('unknownCalendar', new \DateTime, new \DateTime);
+            $this->fail('Calling GoogleCalendar::getEventsForCalendar() with unknown calendar name given should raise an exception');
+        } catch(\Exception $e) {
+            $this->assertEquals('Unknown calendar', $e->getMessage());
+        }
+
+        //Case 1: New event starts before existing event and ends while existing event isn't finished
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7am'), new DateTime('tomorrow 8:30am')));
+        //Case 2: New event starts when existing event starts and ends befor existing event ends
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8am'), new DateTime('tomorrow 8:30am')));
+        //Case 3: New event starts after existing events started & before it ended and runs longer than existing event
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:30am'), new DateTime('tomorrow 9:30am')));
+        //Case 4: New event starts after existing events started & ends before existing event ends.
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 8:10am'), new DateTime('tomorrow 8:50am')));
+        // Case 5: New event ends exactly when existing event starts
+        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 7:30am'), new DateTime('tomorrow 8:00am')));
+        // Case 6: New event starts exactly when existing event ends
+        $this->assertTrue($testSubject->isEventPossible('Cal #1', new \DateTime('tomorrow 9:00am'), new DateTime('tomorrow 9:30am')));
+
+    }
 
     /**
      * Returns a mock object for the Zend_Gdata service implementation
