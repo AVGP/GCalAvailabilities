@@ -89,6 +89,14 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                 new \DateTime('2012-02-03 10:00'),
                 new \DateTime('2012-02-03 11:00')
             ),
+           array(
+                new \DateTime('2012-02-03 10:00'),
+                new \DateTime('2012-02-03 11:00')
+            ),
+            array(
+                new \DateTime('2012-02-03 10:00'),
+                new \DateTime('2012-02-03 11:00')
+            ),
         ); //Its about time to be abled to rely on PHP 5.4
 
         GoogleCalendarTest::$eventsTestSet = array(
@@ -139,8 +147,24 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                     )
                 ),
             array(
-                    (object) array('title' => 'Test Event #1 in Calendar #2', 'when' => array()),
-                    (object) array('title' => 'Test Event #2 in Calendar #2', 'when' => array())
+                    (object) array(
+                        'title' => 'Test Event #1 in Calendar #2',
+                        'when' => array(
+                            0 => (object) array(
+                                    'startTime' => $eventTimes[6][0]->format(DATE_ISO8601),
+                                    'endTime' => $eventTimes[6][1]->format(DATE_ISO8601)
+                                )
+                            )
+                        ),
+                    (object) array(
+                        'title' => 'Test Event #2 in Calendar #2',
+                        'when' => array(
+                            0 => (object) array(
+                                    'startTime' => $eventTimes[7][0]->format(DATE_ISO8601),
+                                    'endTime' => $eventTimes[7][1]->format(DATE_ISO8601)
+                                )
+                            )
+                        )
                 )
         );
 
@@ -242,6 +266,96 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
 
     }
 
+    public function testGetPossibleEventPlacementsInCalendars() {
+        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+
+        $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
+                    array(),
+                    10
+                ),
+                'Test with empty array for calendars');
+        $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
+                    array('invalid'),
+                    10
+                ),
+                'Test with unknown calendar name');
+        $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
+                    array('Cal #1'),
+                    60,
+                    new \DateTime('2012-02-03 08:00'),
+                    2,
+                    new \DateTime('2012-02-03 09:00')
+                ),
+                'Test with no possibilities');
+
+        $this->assertTrue($testSubject->isEventPossible('Cal #2', new \DateTime('2012-02-03 08:00'), new \DateTime('2012-02-03 09:00')));
+        return;
+
+        $this->assertEquals(array(
+                    array(
+                        'calendar'  => 'Cal #2',
+                        'start'     => new \DateTime('2012-02-03 08:00'),
+                        'end'       => new \DateTime('2012-02-03 09:00')
+                    ),
+                    array(
+                        'calendar'  => 'Cal #2',
+                        'start'     => new \DateTime('2012-02-03 08:30'),
+                        'end'       => new \DateTime('2012-02-03 09:30')
+                    )
+                ),
+                $testSubject->getPossibleEventPlacementsInCalendars(
+                    array('Cal #1', 'Cal #2'),
+                    60,
+                    new \DateTime('2012-02-03 08:00'),
+                    50,
+                    new \DateTime('2012-02-03 09:30')
+                ),
+                'Test with 2 possibilities in "Cal #2"');
+
+        $this->assertEquals(array(
+                    array(
+                        'calendar'  => 'Cal #1',
+                        'start'     => new \DateTime('2012-02-03 07:00'),
+                        'end'       => new \DateTime('2012-02-03 08:00')
+                    ),
+                    array(
+                        'calendar'  => 'Cal #2',
+                        'start'     => new \DateTime('2012-02-03 07:00'),
+                        'end'       => new \DateTime('2012-02-03 08:00')
+                    ),
+                    array(
+                        'calendar'  => 'Cal #2',
+                        'start'     => new \DateTime('2012-02-03 07:30'),
+                        'end'       => new \DateTime('2012-02-03 08:30')
+                    )
+                ),
+                $testSubject->getPossibleEventPlacementsInCalendars(
+                    array('Cal #1', 'Cal #2'),
+                    60,
+                    new \DateTime('2012-02-03 07:00'),
+                    5,
+                    new \DateTime('2012-02-03 08:30')
+                ),
+                'Test with 3 possibilities, one in "Cal #1", two in "Cal #2"');
+
+        $this->assertEquals(array(
+                    array(
+                        'calendar'  => 'Cal #1',
+                        'start'     => new \DateTime('2012-02-03 07:00'),
+                        'end'       => new \DateTime('2012-02-03 08:00')
+                    )
+                ),
+                $testSubject->getPossibleEventPlacementsInCalendars(
+                    array('Cal #1', 'Cal #2'),
+                    60,
+                    new \DateTime('2012-02-03 07:00'),
+                    1,
+                    new \DateTime('2012-02-03 08:30')
+                ),
+                'Test with more possibilities than requested');
+
+    }
+
     /**
      * Returns a mock object for the Zend_Gdata service implementation
      */
@@ -261,6 +375,9 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $mock->expects($this->any())
                 ->method('getCalendarEventFeed')
                 ->will($this->returnCallback(function($calendar) {
+
+                    if(is_object($calendar)) $calendar = $calendar->getUser();
+
                     if($calendar == 'http://calendar.google.com/cal1' || $calendar == 'cal1@calendar.google.com' || is_object($calendar)) {
                         return GoogleCalendarTest::$eventsTestSet[0];
                     }
