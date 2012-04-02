@@ -1,23 +1,24 @@
 parameters:
   opening_hours:
     Mon:
-      open: 08:00 +0100
-      close: 18:00 +0100
+      open: 08:00
+      close: 18:00
     Tue:
-      open: 08:00 +0100
-      close: 18:00 +0100
+      open: 08:00
+      close: 18:00
     Wed:
-      open: 08:00 +0100
-      close: 18:00 +0100
+      open: 08:00
+      close: 18:00
     Thu:
-      open: 08:00 +0100
-      close: 18:00 +0100
+      open: 08:00
+      close: 18:00
     Fri:
-      open: 06:00 +0100
-      close: 18:00 +0100
+      open: 06:00
+      close: 18:00
 
 #    a_snet_g_cal.example.class: ASnet\GCalBundle\Example
 
 services:
   google_calendar:
     class: ASnet\GCalBundle\Services\GoogleCalendar
+    arguments: [%opening_hours%]
