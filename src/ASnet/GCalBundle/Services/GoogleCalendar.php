@@ -13,13 +13,22 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class GoogleCalendar {
     protected $dataProvider;
+    protected $openingHours;
 
     /**
      * Creates new instance of the service.
+     * @param Array Array of the opening hours in the following structure:
+     *              array(
+     *                  'Mon' => array('open' => '08:00', 'close' => '18:00'),
+     *                  'Tue' => array('open' => '08:00', 'close' => '18:00'),
+     *                  ...
+     *              )
+     *              Every weekday that is not specified is considered to be "closed"
      * @param Object (Optional) Allows to set an object to carry out requests
      *        to Google Calendar API. This allows dependency injection.
      */
-    public function __construct($dataProvider = null) {
+    public function __construct($openingHours, $dataProvider = null) {
+        $this->openingHours = $openingHours;
         $this->dataProvider = $dataProvider;
     }
 
@@ -153,6 +162,8 @@ class GoogleCalendar {
         }
 
         if($calendarId == null) throw new NotFoundHttpException('Unknown calendar');
+
+
 
         //The Calendar-ID is not suitable to be used in EventQuery, it has to be extracted from a longer URL
         $urlPart = array('','');
