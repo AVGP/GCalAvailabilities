@@ -268,7 +268,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
 
     public function testGetPossibleEventPlacements() {
         $testSubject = new GoogleCalendar($this->getDataProviderMock());
-
+        
         $this->assertEquals(array(), $testSubject->getPossibleEventPlacements(
                     array(),
                     10
@@ -290,72 +290,92 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                 ),
                 'Test with no possibilities');
 
-        $this->assertTrue($testSubject->isEventPossible('Cal #2', new \DateTime('2012-02-03 08:00'), new \DateTime('2012-02-03 09:00')));
-        return;
-
         $this->assertEquals(array(
                     array(
                         'calendar'  => 'Cal #2',
-                        'start'     => new \DateTime('2012-02-03 08:00'),
-                        'end'       => new \DateTime('2012-02-03 09:00')
+                        'start'     => new \DateTime('2012-02-03 08:00 +0100'),
+                        'end'       => new \DateTime('2012-02-03 09:00 +0100')
                     ),
                     array(
                         'calendar'  => 'Cal #2',
-                        'start'     => new \DateTime('2012-02-03 08:30'),
-                        'end'       => new \DateTime('2012-02-03 09:30')
+                        'start'     => new \DateTime('2012-02-03 08:30 +0100'),
+                        'end'       => new \DateTime('2012-02-03 09:30 +0100')
                     )
                 ),
                 $testSubject->getPossibleEventPlacements(
                     array('Cal #1', 'Cal #2'),
                     60,
-                    new \DateTime('2012-02-03 08:00'),
+                    new \DateTime('2012-02-03 08:00 +0100'),
                     50,
-                    new \DateTime('2012-02-03 09:30')
+                    new \DateTime('2012-02-03 09:30 +0100')
                 ),
                 'Test with 2 possibilities in "Cal #2"');
-
+        
         $this->assertEquals(array(
                     array(
                         'calendar'  => 'Cal #1',
-                        'start'     => new \DateTime('2012-02-03 07:00'),
-                        'end'       => new \DateTime('2012-02-03 08:00')
+                        'start'     => new \DateTime('2012-02-03 07:00 +0100'),
+                        'end'       => new \DateTime('2012-02-03 08:00 +0100')
                     ),
                     array(
                         'calendar'  => 'Cal #2',
-                        'start'     => new \DateTime('2012-02-03 07:00'),
-                        'end'       => new \DateTime('2012-02-03 08:00')
+                        'start'     => new \DateTime('2012-02-03 07:00 +0100'),
+                        'end'       => new \DateTime('2012-02-03 08:00 +0100')
                     ),
                     array(
                         'calendar'  => 'Cal #2',
-                        'start'     => new \DateTime('2012-02-03 07:30'),
-                        'end'       => new \DateTime('2012-02-03 08:30')
+                        'start'     => new \DateTime('2012-02-03 07:30 +0100'),
+                        'end'       => new \DateTime('2012-02-03 08:30 +0100')
                     )
                 ),
                 $testSubject->getPossibleEventPlacements(
                     array('Cal #1', 'Cal #2'),
                     60,
-                    new \DateTime('2012-02-03 07:00'),
+                    new \DateTime('2012-02-03 07:00 +0100'),
                     5,
-                    new \DateTime('2012-02-03 08:30')
+                    new \DateTime('2012-02-03 08:30 +0100')
                 ),
                 'Test with 3 possibilities, one in "Cal #1", two in "Cal #2"');
 
         $this->assertEquals(array(
                     array(
                         'calendar'  => 'Cal #1',
-                        'start'     => new \DateTime('2012-02-03 07:00'),
-                        'end'       => new \DateTime('2012-02-03 08:00')
+                        'start'     => new \DateTime('2012-02-03 07:00 +0100'),
+                        'end'       => new \DateTime('2012-02-03 08:00 +0100')
                     )
                 ),
                 $testSubject->getPossibleEventPlacements(
                     array('Cal #1', 'Cal #2'),
                     60,
-                    new \DateTime('2012-02-03 07:00'),
+                    new \DateTime('2012-02-03 07:00 +0100'),
                     1,
-                    new \DateTime('2012-02-03 08:30')
+                    new \DateTime('2012-02-03 08:30 +0100')
                 ),
                 'Test with more possibilities than requested');
 
+        //Now we're testing the optional stepping
+        $this->assertEquals(
+                array(
+                    array(
+                        'calendar'  => 'Cal #1',
+                        'start'     => new \DateTime('2012-02-03 06:30 +0100'),
+                        'end'       => new \DateTime('2012-02-03 07:30 +0100')
+                    ),
+                    array(
+                        'calendar'  => 'Cal #1',
+                        'start'     => new \DateTime('2012-02-03 02:30 +0100'),
+                        'end'       => new \DateTime('2012-02-03 07:30 +0100')
+                    ),
+                ),
+                $testSubject->getPossibleEventPlacements(
+                    array('Cal #1'),
+                    60,
+                    new \DateTime('2012-02-03 08:00 +0100'),
+                    10,
+                    new \DateTime('2012-02-03 09:00 +0100'),
+                    30
+                ),
+                'Test with $stepping = 60 minutes');
     }
 
     /**
