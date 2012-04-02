@@ -102,15 +102,9 @@ class GoogleCalendar {
                 $dtStart = new \DateTime($when->startTime);
                 $dtEnd = new \DateTime($when->endTime);
 
-                echo 'Testing '. $event->title . ' when: ' . print_r($when,1);
 
-                if(($dtStart < $start && $dtEnd > $start) || ($dtStart >= $start && $dtStart < $end)) {
-                    echo 'Failed: ' . $event->title . ' # ' .
-                            $dtStart->format('c') . ' vs. ' . $dtEnd->format('c') . ' -- ' .
-                            $start->format('c') . ' vs. ' . $end->format('c');
-                    echo (($dtStart < $end) ? 'yes' : 'no');
+                if(($dtStart < $start && $dtEnd > $start) || ($dtStart >= $start && $dtStart < $end))
                     return false;
-                        }
             }
         }
         return true;
