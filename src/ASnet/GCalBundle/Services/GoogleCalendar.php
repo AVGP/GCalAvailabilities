@@ -70,6 +70,15 @@ class GoogleCalendar {
         return $this->dataProvider->getCalendarEventFeed($feedUrl);
     }
 
+    /**
+     * Tests if an event (defined by its start and end DateTime) can be stored in the specified calendar.
+     * @param string $calendarName Name of the calendar to use
+     * @param DateTime $start A DateTime instance specifying the start of the event
+     * @param DateTime $end A DateTime instance specifying the start of the event
+     * @return boolean Returns true if event is possible, returns false if not
+     * @throws NotFoundHttpException In case of an unknown calendar (i.e. no calendar with specified name),
+     *         a NotFoundHttpException is thrown
+     */
     public function isEventPossible($calendarName, $start, $end) {
         $listFeed = $this->getCalendars();
 
