@@ -360,20 +360,15 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'calendar'  => 'Cal #1',
                         'start'     => new \DateTime('2012-02-03 06:30 +0100'),
                         'end'       => new \DateTime('2012-02-03 07:30 +0100')
-                    ),
-                    array(
-                        'calendar'  => 'Cal #1',
-                        'start'     => new \DateTime('2012-02-03 02:30 +0100'),
-                        'end'       => new \DateTime('2012-02-03 07:30 +0100')
-                    ),
+                    )
                 ),
                 $testSubject->getPossibleEventPlacements(
                     array('Cal #1'),
                     60,
-                    new \DateTime('2012-02-03 08:00 +0100'),
+                    new \DateTime('2012-02-03 06:30 +0100'),
                     10,
-                    new \DateTime('2012-02-03 09:00 +0100'),
-                    30
+                    new \DateTime('2012-02-03 08:00 +0100'),
+                    60
                 ),
                 'Test with $stepping = 60 minutes');
     }
