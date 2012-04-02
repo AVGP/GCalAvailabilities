@@ -1,4 +1,21 @@
 parameters:
+  opening_hours:
+    Mon:
+      open: 08:00 +0100
+      close: 18:00 +0100
+    Tue:
+      open: 08:00 +0100
+      close: 18:00 +0100
+    Wed:
+      open: 08:00 +0100
+      close: 18:00 +0100
+    Thu:
+      open: 08:00 +0100
+      close: 18:00 +0100
+    Fri:
+      open: 06:00 +0100
+      close: 18:00 +0100
+
 #    a_snet_g_cal.example.class: ASnet\GCalBundle\Example
 
 services:
