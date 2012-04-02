@@ -80,6 +80,11 @@ class GoogleCalendar {
      * @param integer $numResults [Optional] (maximum) number of results to return, default is 50.
      * @param \DateTime $maxDateTime [Optional] Specifies when to stop searching, when there are not enough
      *                          possibilities.
+     * @param integer $stepping [Optional] Number of minutes to add after each check.
+     *                          E.g. $stepping = 30, $startFrom = "today 08:00" will try to put the event
+     *                          on 08:00, 08:30, 9:00,... while $stepping = 60 would try 08:00, 09:00, ...
+     *                          Default is 30 minutes per step.
+     *
      * @return Array Array of structure:
      *         array(
      *              0 => array( 'calendar' => 'Name of the calendar', 'start' => DateTime, 'end' => DateTime),
@@ -87,7 +92,7 @@ class GoogleCalendar {
      *              ...
      *          )
      */
-    public function getPossibleEventPlacements($calendarNames, $eventDuration, $startFrom = null, $numResults = 50, $maxDateTime = null) {
+    public function getPossibleEventPlacements($calendarNames, $eventDuration, $startFrom = null, $numResults = 50, $maxDateTime = null, $stepping = 30) {
         $possibilitiesFound = array();
 
         if($startFrom === null) $startFrom = new \DateTime();
@@ -105,20 +110,23 @@ class GoogleCalendar {
 
         while(count($possibilitiesFound) < $numResults && $endDateTime <= $maxDateTime) {
             foreach($calendarNames as $calendar) {
+                if(count($possibilitiesFound) === $numResults) break;
                 try {
                     if($this->isEventPossible($calendar, $startDateTime, $endDateTime)) {
                         $possibilitiesFound[] = array(
                             'calendar'  => $calendar,
-                            'start'     => $startDateTime,
-                            'end'       => $endDateTime);
+                            'start'     => new \DateTime($startDateTime->format('c')), // For those of you, who are still wondering:
+                                                                                       // PHP references here if not explicitely overriden!
+                            'end'       => new \DateTime($endDateTime->format('c'))
+                        );
                     }
                 } catch(\Exception $e) {
                     throw $e;
                 }
             }
 
-            $startDateTime->modify('+30 minutes');
-            $endDateTime->modify('+30 minutes');
+            $startDateTime->modify('+' . $stepping . ' minutes');
+            $endDateTime->modify('+' . $stepping . ' minutes');
         }
 
         return $possibilitiesFound;
