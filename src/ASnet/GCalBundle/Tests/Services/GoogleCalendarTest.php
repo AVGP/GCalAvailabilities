@@ -266,10 +266,10 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
 
     }
 
-    public function testGetPossibleEventPlacementsInCalendars() {
+    public function testGetPossibleEventPlacements() {
         $testSubject = new GoogleCalendar($this->getDataProviderMock());
 
-        $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
+        $this->assertEquals(array(), $testSubject->getPossibleEventPlacements(
                     array(),
                     10
                 ),
@@ -281,7 +281,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
             $this->assertEquals('Unknown calendar', $e->getMessage());
         }
         
-        $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
+        $this->assertEquals(array(), $testSubject->getPossibleEventPlacements(
                     array('Cal #1'),
                     60,
                     new \DateTime('2012-02-03 08:00'),
@@ -305,7 +305,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'end'       => new \DateTime('2012-02-03 09:30')
                     )
                 ),
-                $testSubject->getPossibleEventPlacementsInCalendars(
+                $testSubject->getPossibleEventPlacements(
                     array('Cal #1', 'Cal #2'),
                     60,
                     new \DateTime('2012-02-03 08:00'),
@@ -331,7 +331,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'end'       => new \DateTime('2012-02-03 08:30')
                     )
                 ),
-                $testSubject->getPossibleEventPlacementsInCalendars(
+                $testSubject->getPossibleEventPlacements(
                     array('Cal #1', 'Cal #2'),
                     60,
                     new \DateTime('2012-02-03 07:00'),
@@ -347,7 +347,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                         'end'       => new \DateTime('2012-02-03 08:00')
                     )
                 ),
-                $testSubject->getPossibleEventPlacementsInCalendars(
+                $testSubject->getPossibleEventPlacements(
                     array('Cal #1', 'Cal #2'),
                     60,
                     new \DateTime('2012-02-03 07:00'),

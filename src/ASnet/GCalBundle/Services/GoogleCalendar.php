@@ -71,6 +71,60 @@ class GoogleCalendar {
     }
 
     /**
+     * Returns $numResults possibilities to store an event of $duration minutes
+     * in Calendars with a name from $calendarNames (or less, if there are not enough
+     * possibilities before $maxDateTime) starting from $startFrom.
+     * @param Array $calendarNames List of calendar names to search in
+     * @param integer $eventDuration The length of the event in minutes
+     * @param \DateTime $startFrom DateTime to start with
+     * @param integer $numResults [Optional] (maximum) number of results to return, default is 50.
+     * @param \DateTime $maxDateTime [Optional] Specifies when to stop searching, when there are not enough
+     *                          possibilities.
+     * @return Array Array of structure:
+     *         array(
+     *              0 => array( 'calendar' => 'Name of the calendar', 'start' => DateTime, 'end' => DateTime),
+     *              1 => array( 'calendar' => 'Name of the calendar', 'start' => DateTime, 'end' => DateTime),
+     *              ...
+     *          )
+     */
+    public function getPossibleEventPlacements($calendarNames, $eventDuration, $startFrom = null, $numResults = 50, $maxDateTime = null) {
+        $possibilitiesFound = array();
+
+        if($startFrom === null) $startFrom = new \DateTime();
+        if($maxDateTime === null) {
+            $maxDateTime = $startFrom;
+            $maxDateTime->modify('+100 days');
+        }
+
+
+        $startDateTime = new \DateTime($startFrom->format('c'));    // I really hate PHP for this.
+                                                                    // If you don't do it this way, its
+                                                                    // using references and screws up when you use ->modify(). Brilliant!
+        $endDateTime = new \DateTime($startDateTime->format('c'));
+        $endDateTime->modify('+' . $eventDuration . ' minutes' );
+
+        while(count($possibilitiesFound) < $numResults && $endDateTime <= $maxDateTime) {
+            foreach($calendarNames as $calendar) {
+                try {
+                    if($this->isEventPossible($calendar, $startDateTime, $endDateTime)) {
+                        $possibilitiesFound[] = array(
+                            'calendar'  => $calendar,
+                            'start'     => $startDateTime,
+                            'end'       => $endDateTime);
+                    }
+                } catch(\Exception $e) {
+                    throw $e;
+                }
+            }
+
+            $startDateTime->modify('+30 minutes');
+            $endDateTime->modify('+30 minutes');
+        }
+
+        return $possibilitiesFound;
+    }
+
+    /**
      * Tests if an event (defined by its start and end DateTime) can be stored in the specified calendar.
      * @param string $calendarName Name of the calendar to use
      * @param DateTime $start A DateTime instance specifying the start of the event
@@ -112,13 +166,13 @@ class GoogleCalendar {
                 $dtEnd = new \DateTime($when->endTime);
 
 
-                if(($dtStart < $start && $dtEnd > $start) || ($dtStart >= $start && $dtStart < $end))
+                if(($dtStart < $start && $dtEnd > $start) || ($dtStart >= $start && $dtStart < $end)) {
                     return false;
+                }
             }
         }
         return true;
     }
-
 }
 
 ?>
