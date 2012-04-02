@@ -274,11 +274,13 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                     10
                 ),
                 'Test with empty array for calendars');
-        $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
-                    array('invalid'),
-                    10
-                ),
-                'Test with unknown calendar name');
+        try {
+            $testSubject->getEventsFromCalendar('unknownCalendar');
+            $this->fail('Calling GoogleCalendar::getPossibleEventPlacementsInCalendar() with unknown calendar name given should raise an exception');
+        } catch(\Exception $e) {
+            $this->assertEquals('Unknown calendar', $e->getMessage());
+        }
+        
         $this->assertEquals(array(), $testSubject->getPossibleEventPlacementsInCalendars(
                     array('Cal #1'),
                     60,
