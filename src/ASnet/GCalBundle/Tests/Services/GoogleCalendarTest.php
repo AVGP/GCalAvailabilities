@@ -10,6 +10,18 @@ use ASnet\GCalBundle\Services\GoogleCalendar;
 class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
 
     /**
+     * The shop opening hours to use for testing
+     * @var Array The shop opening hours for each day of the week
+     */
+    protected $openingHours = array(
+        'Mon' => array('open' => '06:00', 'close' => '18:00'),
+        'Tue' => array('open' => '06:00', 'close' => '18:00'),
+        'Wed' => array('open' => '06:00', 'close' => '18:00'),
+        'Thu' => array('open' => '06:00', 'close' => '18:00'),
+        'Fri' => array('open' => '06:00', 'close' => '18:00')
+    );
+
+    /**
      * List of calendars our mocked Zend_Gdata_Calendar will return when asked
      * for a list of calendars
      * @var Array Structure
@@ -177,8 +189,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
     * Case 2: Call with some object as a data provider
     */
    public function testConstructor() {
-        $this->assertAttributeEquals(null, 'dataProvider', new GoogleCalendar());
-        $this->assertAttributeEquals($this, 'dataProvider', new GoogleCalendar($this)); //Passing $this as the data provider does
+        $this->assertAttributeEquals(null, 'dataProvider', new GoogleCalendar(array()));
+        $this->assertAttributeEquals($this, 'dataProvider', new GoogleCalendar(array(),$this)); //Passing $this as the data provider does
                                                                                         // not make sense semantically but the constructor
                                                                                         // just sets the internal property, so it's okay here.
     }
@@ -191,7 +203,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
      *         to an instance of Zend_Gdata_Calendar
      */
     public function testInitDefaultProviderFromToken() {
-      $testSubject = new GoogleCalendar();
+      $testSubject = new GoogleCalendar(array());
         try {
             $testSubject->initDefaultProviderFromToken(null);
             $this->fail('GoogleCalendar::initWithToken with null as parameter should throw an exception.');
@@ -208,11 +220,11 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
      */
     public function testIsInitialized() {
 
-        $testSubject = new GoogleCalendar($this);   // Semantically it does not make sense to pass $this,
+        $testSubject = new GoogleCalendar(array(), $this);   // Semantically it does not make sense to pass $this,
                                                      // see comment in testConstructor.
         $this->assertTrue($testSubject->isInitialized());
         
-        $testSubject = new GoogleCalendar();
+        $testSubject = new GoogleCalendar(array());
         $this->assertFalse($testSubject->isInitialized());
 
         $testSubject->initDefaultProviderFromToken('sometoken');
@@ -220,14 +232,14 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetCalendars() {
-        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+        $testSubject = new GoogleCalendar($this->openingHours, $this->getDataProviderMock());
 
         $this->assertEquals($this->calendarsTestSet, $testSubject->getCalendars(), 'Calendar list was not properly returned by getCalendars()');
     }
 
     public function testGetEventsFromCalendar() {
 
-        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+        $testSubject = new GoogleCalendar($this->openingHours, $this->getDataProviderMock());
         try {
             $testSubject->getEventsFromCalendar('unknownCalendar');
             $this->fail('Calling GoogleCalendar::getEventsFromCalendar() with unknown calendar name given should raise an exception');
@@ -240,7 +252,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testIsEventPossible() {
-        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+        $testSubject = new GoogleCalendar($this->openingHours, $this->getDataProviderMock());
 
         try {
             $testSubject->isEventPossible('unknownCalendar', new \DateTime, new \DateTime);
@@ -272,7 +284,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetPossibleEventPlacements() {
-        $testSubject = new GoogleCalendar($this->getDataProviderMock());
+        $testSubject = new GoogleCalendar($this->openingHours, $this->getDataProviderMock());
         
         $this->assertEquals(array(), $testSubject->getPossibleEventPlacements(
                     array(),
