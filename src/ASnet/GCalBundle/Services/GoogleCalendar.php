@@ -80,6 +80,17 @@ class GoogleCalendar {
     }
 
     /**
+     * Add an event with title $title from $start until $end to Calendar $calendarName
+     * @param string $title The title of the event
+     * @param DateTime $start Begin of the event
+     * @param DateTime $end End of the event
+     * @param string $calendarName Name of the calendar
+     */
+    public function addEvent($title, $start, $end, $calendarName) {
+        
+    }
+
+    /**
      * Returns $numResults possibilities to store an event of $duration minutes
      * in Calendars with a name from $calendarNames (or less, if there are not enough
      * possibilities before $maxDateTime) starting from $startFrom.

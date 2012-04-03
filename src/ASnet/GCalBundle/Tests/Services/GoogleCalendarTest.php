@@ -391,6 +391,29 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                 'Test with $stepping = 60 minutes');
     }
 
+    public function testAddEvent() {
+        $testSubject = new GoogleCalendar($this->openingHours, $this->getDataProviderMock());
+        
+        $this->assertTrue($testSubject->addEvent(
+                'Test',
+                new \DateTime('2012-03-05 12:00 +0100'),
+                new \DateTime('2012-03-05 13:00 +0100'),
+                'Cal #1'
+            ));
+
+        try {
+            $testSubject->addEvent(
+                'Test',
+                new \DateTime('2012-03-05 12:00 +0100'),
+                new \DateTime('2012-03-05 13:00 +0100'),
+                'Invalid Cal'
+            );
+            $this->fail('Calling GoogleCalendar::addEvent() with unknown calendar name given should raise an exception');
+        } catch(\Exception $e) {
+            $this->assertEquals('Unknown calendar', $e->getMessage());
+        }
+    }
+
     /**
      * Returns a mock object for the Zend_Gdata service implementation
      */
