@@ -87,7 +87,34 @@ class GoogleCalendar {
      * @param string $calendarName Name of the calendar
      */
     public function addEvent($title, $start, $end, $calendarName) {
-        
+        $listFeed = $this->getCalendars();
+        $feedUrl = null;
+        foreach($listFeed as $feed) {
+            if($feed->title == $calendarName) {
+                $feedUrl = $feed->link[0]->href;
+                break;
+            }
+        }
+
+        if($feedUrl == null) throw new NotFoundHttpException('Unknown calendar');
+
+        $event = $this->dataProvider->newEventEntry();
+        $event->title = $this->dataProvider->newTitle('TEST');
+
+        $when = $this->dataProvider->newWhen();
+        $when->startTime = '2012-04-04T12:00:00.000+01:00';
+        $when->endTime   = '2012-04-04T13:00:00.000+01:00';
+
+        $event->when = array($when);
+
+        $this->dataProvider->insertEvent($event, $feedUrl);
+
+        $events = $this->getEventsFromCalendar($calendarName);
+        foreach($events as $event) {
+            if($event->title == $title && isset($event->when[0]) && new \DateTime($event->when[0]->startTime) == $start && new \DateTime($event->when[0]->endTime) == $end)
+                return true;
+        }
+        return false;
     }
 
     /**
