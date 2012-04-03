@@ -401,6 +401,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                 'Cal #1'
             ));
 
+        print_r($testSubject->getEventsFromCalendar('Cal #1'));
+
         try {
             $testSubject->addEvent(
                 'Test',
@@ -420,7 +422,7 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
     protected function getDataProviderMock() {
 
         $mock = $this->getMock('Zend_Gdata_Calendar',
-                array('getCalendarListFeed', 'getCalendarEventFeed'),
+                array('getCalendarListFeed', 'getCalendarEventFeed', 'newEventEntry', 'newTitle', 'newWhen', 'insertEvent'),
                 array(),
                 '',
                 false
@@ -445,6 +447,35 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
                     else {
                         return array();
                     }
+                }));
+
+        $mock->expects($this->any())
+                ->method('newEventEntry')
+                ->will($this->returnValue((object) array('title' => '', 'when' => array())));
+
+        $mock->expects($this->any())
+                ->method('newTitle')
+                ->will($this->returnValue('test'));
+
+        $mock->expects($this->any())
+                ->method('newWhen')
+                ->will($this->returnValue((object) array('startTime' => '', 'endTime' => '')));
+
+        $mock->expects($this->any())
+                ->method('insertEvent')
+                ->will($this->returnCallback(function($calendar) {
+                    $start = new \DateTime('2012-03-05 12:00 +0100');
+                    $end = new \DateTime('2012-03-05 13:00 +0100');
+                    GoogleCalendarTest::$eventsTestSet[0][] = (object) array(
+                        'title' => 'Test',
+                        'when' => array(
+                            0 => (object) array(
+                                'startTime' => $start->format(DATE_ISO8601),
+                                'endTime' => $end->format(DATE_ISO8601)
+                            )
+                        )
+                    );
+
                 }));
 
         return $mock;
