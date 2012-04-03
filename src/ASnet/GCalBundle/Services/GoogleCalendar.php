@@ -163,8 +163,10 @@ class GoogleCalendar {
 
         if($calendarId == null) throw new NotFoundHttpException('Unknown calendar');
 
-        if(($start < new \DateTime($start->format('Y-m-d').' ' . $this->openingHours[$start->format('D')]['open'])) ||
-            ($end > new \DateTime($end->format('Y-m-d').' ' . $this->openingHours[$end->format('D')]['close']))) return false;
+        if((!isset($this->openingHours[$start->format('D')]) || !isset($this->openingHours[$end->format('D')])) ||
+            ($start < new \DateTime($start->format('Y-m-d').' ' . $this->openingHours[$start->format('D')]['open'])) ||
+            ($end > new \DateTime($end->format('Y-m-d').' ' . $this->openingHours[$end->format('D')]['close'])))
+                return false;
 
         //The Calendar-ID is not suitable to be used in EventQuery, it has to be extracted from a longer URL
         $urlPart = array('','');
