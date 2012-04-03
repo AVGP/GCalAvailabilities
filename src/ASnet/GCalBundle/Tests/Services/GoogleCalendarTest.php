@@ -279,7 +279,8 @@ class GoogleCalendarTest extends \PHPUnit_Framework_TestCase {
         $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 05:00 +0100'), new \DateTime('2012-02-03 05:30 +0100')));
         // Case 9: New event would be out of shop opening hours (too late):
         $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-03 22:00 +0100'), new \DateTime('2012-02-03 22:30 +0100')));
-
+        // Case 10: New event would be out of shop opening hours (Weekend):
+        $this->assertFalse($testSubject->isEventPossible('Cal #1', new \DateTime('2012-02-04 12:00 +0100'), new \DateTime('2012-02-04 12:30 +0100')));
 
     }
 
